@@ -8,17 +8,17 @@ public class Receiver extends Host {
     //发送方ip
     private String SenderIp;
     //发送方端口
-    private int SendPort;
+    private int SenderPort;
 
     private final DatagramSocket Socket;
-
+    //缓冲区
     private byte[] Buffer;
 
     private final String Filename;
-
+    //最大报文段长度
     private int MSS = 0;
-
-    private int ack = 1;
+    //确认字符
+    private int ACK = 1;
 
     //seq与报文的映射
     private final HashMap<Integer, StpPacket> PacketBuffer;
@@ -56,6 +56,31 @@ public class Receiver extends Host {
         }
     }
 
+    /**
+     * 对收到的报文进行响应
+     * 处理断开连接和建立连接时的握手请求与发送
+     * 将受到的数据报文拆包并写入文件
+     *
+     * @param stpPacket 收到的报文
+     * @param hostName  主机IP
+     * @param port      端口
+     * @return
+     */
+    private void handleReceivePacket(StpPacket stpPacket, String hostName, int port) {
+        switch (this.receiverState) {
+            //建立连接
+            case CLOSED:
+                if (stpPacket.isSYN()) {
+                    if (stpPacket.getData() == null || stpPacket.getData().length == 0) {
+                        this.SenderIp = hostName;
+                        this.SenderPort = port;
+                        this.MSS = stpPacket.getMSS();
+                        this.Buffer = new byte[13 + MSS];
+
+                    }
+                }
+        }
+    }
 
 
 
